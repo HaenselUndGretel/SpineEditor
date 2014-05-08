@@ -49,11 +49,6 @@ namespace SpineEditor
 
 		}
 
-		private void label2_Click(object sender, EventArgs e)
-		{
-
-		}
-
 		private void numericUpDownPositionX_ValueChanged(object sender, EventArgs e)
 		{
 			mScene.ChangeSpinePosition();
@@ -76,9 +71,14 @@ namespace SpineEditor
 			mScene.StartAnimation(listBoxFadingFrom.SelectedItem.ToString(), listBoxFadingTo.SelectedItem.ToString());
 		}
 
-		private void progressBarAnimation_Click(object sender, EventArgs e)
+		private void numericUpDownSpeed_ValueChanged(object sender, EventArgs e)
 		{
+			mScene.ChangeSpeed((float)numericUpDownSpeed.Value);
+		}
 
+		private void numericUpDownZoom_ValueChanged(object sender, EventArgs e)
+		{
+			mScene.ChangeZoom((float)numericUpDownZoom.Value);
 		}
 	}
 }

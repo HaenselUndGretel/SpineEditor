@@ -87,6 +87,9 @@ namespace SpineEditor
 
 		#region Methods
 
+		/// <summary>
+		/// Reagiert auf Tastatureingaben.
+		/// </summary>
 		public void HandleInput()
 		{
 			mKeyboardState = mKeyboardStateOld;
@@ -108,10 +111,16 @@ namespace SpineEditor
 				
 		}
 
+		/// <summary>
+		/// Startet die Animation von vorne.
+		/// </summary>
+		/// <param name="pA">From</param>
+		/// <param name="pB">To</param>
 		public void StartAnimation(string pA, string pB)
 		{
 			mA = pA;
 			mB = pB;
+			mSpine.Skeleton.SetSlotsToSetupPose();
 			mSpine.AnimationState.SetAnimation(0, mA, true);
 			mPlayingA = true;
 			mPlayingTimer = EngineSettings.Time.TotalGameTime.Milliseconds;
@@ -119,6 +128,9 @@ namespace SpineEditor
 			
 		}
 
+		/// <summary>
+		/// Handled Veränderungen an der Animation.
+		/// </summary>
 		public void UpdateAnimation()
 		{
 			if (EngineSettings.Time.TotalGameTime.Milliseconds > mPlayingTimer + mSpine.AnimationState.GetCurrent(0).Animation.Duration * 2000)
@@ -130,15 +142,35 @@ namespace SpineEditor
 				}
 				else
 				{
-					mPlaying = false;
+					StartAnimation(mA, mB); //Loop Fading
 				}
 			}
 			mSpine.Update();
 			int TmpProgress = (int)(100 * ((EngineSettings.Time.TotalGameTime.Milliseconds - mPlayingTimer) / (double)(mSpine.AnimationState.GetCurrent(0).Animation.Duration * 2000)));
+			TmpProgress = (int)(100 * mSpine.AnimationState.GetCurrent(0).Mix);
 			if (TmpProgress > 0)
 				mEditorForm.progressBarAnimation.Value = TmpProgress;
 		}
 
+		/// <summary>
+		/// Ändert das DrawScaling des SpineObjects.
+		/// </summary>
+		public void ChangeZoom(float pZoom)
+		{
+			mSpine.ChangeDrawScaling(pZoom);
+		}
+
+		/// <summary>
+		/// Ändert die TimeScale des SpineObjects.
+		/// </summary>
+		public void ChangeSpeed(float pSpeed)
+		{
+			mSpine.AnimationState.TimeScale = pSpeed;
+		}
+
+		/// <summary>
+		/// Läd das SpineObject neu.
+		/// </summary>
 		public void LoadNewSpineObject(string pSkeletonName)
 		{
 			mPlaying = false;
@@ -166,15 +198,21 @@ namespace SpineEditor
 			}
 			mEditorForm.listBoxFadingFrom.Items.AddRange(TmpFadingListOutputFrom.ToArray());
 			mEditorForm.listBoxFadingTo.Items.AddRange(TmpFadingListOutputTo.ToArray());
-			mSpine.AnimationState.SetAnimation(0, TmpFadingListOutputFrom[0], true);
+			mSpine.AnimationState.SetAnimation(0, mSpine.Skeleton.Data.Animations[0], true);
 		}
 
+		/// <summary>
+		/// Setzt das SpineObject neu relativ zur Standardposition.
+		/// </summary>
 		public void ChangeSpinePosition()
 		{
 			mSpine.PositionX = EngineSettings.VirtualResWidth / 2 + (int)mEditorForm.numericUpDownPositionX.Value;
 			mSpine.PositionY = EngineSettings.VirtualResHeight / 2 + 200 - (int)mEditorForm.numericUpDownPositionY.Value;
 		}
 
+		/// <summary>
+		/// Läd den Ordner am DataPath neu.
+		/// </summary>
 		public void ReloadFolder()
 		{
 			mPlaying = false;
@@ -210,6 +248,9 @@ namespace SpineEditor
 			mEditorForm.listBoxSkeletons.Items.AddRange(mRessourcen.Keys.ToArray());
 		}
 
+		/// <summary>
+		/// Speichert die Settings.
+		/// </summary>
 		public void SaveData()
 		{
 			StreamWriter file = new StreamWriter(EngineSettings.DefaultPathSpine + mEditorForm.listBoxSkeletons.SelectedItem.ToString() + ".settings");
@@ -217,6 +258,10 @@ namespace SpineEditor
 			file.Close();
 		}
 
+		/// <summary>
+		/// List aus Skeleton Files die möglichen FadingSettings.
+		/// </summary>
+		/// <param name="pDefaultFading">Fading mit dem die Settings am Anfang gefüllt werden.</param>
 		public List<SpineData.AnimationMix> GetAnimationMixes(string pSkeletonName, float pDefaultFading)
 		{
 			List<SpineData.AnimationMix> TmpAnimationMixes = new List<SpineData.AnimationMix>();

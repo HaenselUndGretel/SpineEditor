@@ -34,6 +34,8 @@
 			this.folderBrowser = new System.Windows.Forms.FolderBrowserDialog();
 			this.buttonBrowse = new System.Windows.Forms.Button();
 			this.groupBoxView = new System.Windows.Forms.GroupBox();
+			this.labelSpeed = new System.Windows.Forms.Label();
+			this.numericUpDownSpeed = new System.Windows.Forms.NumericUpDown();
 			this.checkBoxLockView = new System.Windows.Forms.CheckBox();
 			this.labelPositionY = new System.Windows.Forms.Label();
 			this.labelPositionX = new System.Windows.Forms.Label();
@@ -48,6 +50,7 @@
 			this.progressBarAnimation = new System.Windows.Forms.ProgressBar();
 			((System.ComponentModel.ISupportInitialize)(this.numericUpDownZoom)).BeginInit();
 			this.groupBoxView.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.numericUpDownSpeed)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.numericUpDownPositionY)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.numericUpDownPositionX)).BeginInit();
 			this.groupBoxFading.SuspendLayout();
@@ -90,6 +93,7 @@
             0,
             0,
             65536});
+			this.numericUpDownZoom.ValueChanged += new System.EventHandler(this.numericUpDownZoom_ValueChanged);
 			// 
 			// labelZoom
 			// 
@@ -120,6 +124,8 @@
 			// 
 			// groupBoxView
 			// 
+			this.groupBoxView.Controls.Add(this.labelSpeed);
+			this.groupBoxView.Controls.Add(this.numericUpDownSpeed);
 			this.groupBoxView.Controls.Add(this.checkBoxLockView);
 			this.groupBoxView.Controls.Add(this.labelPositionY);
 			this.groupBoxView.Controls.Add(this.labelPositionX);
@@ -127,19 +133,52 @@
 			this.groupBoxView.Controls.Add(this.numericUpDownPositionX);
 			this.groupBoxView.Controls.Add(this.labelZoom);
 			this.groupBoxView.Controls.Add(this.numericUpDownZoom);
-			this.groupBoxView.Location = new System.Drawing.Point(12, 379);
+			this.groupBoxView.Location = new System.Drawing.Point(4, 379);
 			this.groupBoxView.Name = "groupBoxView";
-			this.groupBoxView.Size = new System.Drawing.Size(156, 122);
+			this.groupBoxView.Size = new System.Drawing.Size(170, 155);
 			this.groupBoxView.TabIndex = 4;
 			this.groupBoxView.TabStop = false;
 			this.groupBoxView.Text = "View";
+			// 
+			// labelSpeed
+			// 
+			this.labelSpeed.AutoSize = true;
+			this.labelSpeed.Location = new System.Drawing.Point(81, 103);
+			this.labelSpeed.Name = "labelSpeed";
+			this.labelSpeed.Size = new System.Drawing.Size(38, 13);
+			this.labelSpeed.TabIndex = 9;
+			this.labelSpeed.Text = "Speed";
+			// 
+			// numericUpDownSpeed
+			// 
+			this.numericUpDownSpeed.DecimalPlaces = 1;
+			this.numericUpDownSpeed.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            65536});
+			this.numericUpDownSpeed.Location = new System.Drawing.Point(6, 101);
+			this.numericUpDownSpeed.Maximum = new decimal(new int[] {
+            15,
+            0,
+            0,
+            65536});
+			this.numericUpDownSpeed.Name = "numericUpDownSpeed";
+			this.numericUpDownSpeed.Size = new System.Drawing.Size(68, 20);
+			this.numericUpDownSpeed.TabIndex = 8;
+			this.numericUpDownSpeed.Value = new decimal(new int[] {
+            10,
+            0,
+            0,
+            65536});
+			this.numericUpDownSpeed.ValueChanged += new System.EventHandler(this.numericUpDownSpeed_ValueChanged);
 			// 
 			// checkBoxLockView
 			// 
 			this.checkBoxLockView.AutoSize = true;
 			this.checkBoxLockView.Checked = true;
 			this.checkBoxLockView.CheckState = System.Windows.Forms.CheckState.Checked;
-			this.checkBoxLockView.Location = new System.Drawing.Point(38, 99);
+			this.checkBoxLockView.Location = new System.Drawing.Point(43, 132);
 			this.checkBoxLockView.Name = "checkBoxLockView";
 			this.checkBoxLockView.Size = new System.Drawing.Size(76, 17);
 			this.checkBoxLockView.TabIndex = 7;
@@ -215,7 +254,7 @@
 			this.listBoxFadingFrom.FormattingEnabled = true;
 			this.listBoxFadingFrom.Location = new System.Drawing.Point(7, 20);
 			this.listBoxFadingFrom.Name = "listBoxFadingFrom";
-			this.listBoxFadingFrom.Size = new System.Drawing.Size(121, 446);
+			this.listBoxFadingFrom.Size = new System.Drawing.Size(121, 472);
 			this.listBoxFadingFrom.TabIndex = 5;
 			this.listBoxFadingFrom.SelectedIndexChanged += new System.EventHandler(this.listBoxFadingFrom_SelectedIndexChanged);
 			// 
@@ -224,14 +263,14 @@
 			this.listBoxFadingTo.FormattingEnabled = true;
 			this.listBoxFadingTo.Location = new System.Drawing.Point(134, 19);
 			this.listBoxFadingTo.Name = "listBoxFadingTo";
-			this.listBoxFadingTo.Size = new System.Drawing.Size(120, 446);
+			this.listBoxFadingTo.Size = new System.Drawing.Size(120, 472);
 			this.listBoxFadingTo.TabIndex = 8;
 			this.listBoxFadingTo.SelectedIndexChanged += new System.EventHandler(this.listBoxFadingTo_SelectedIndexChanged);
 			// 
 			// labelFadingFrom
 			// 
 			this.labelFadingFrom.AutoSize = true;
-			this.labelFadingFrom.Location = new System.Drawing.Point(52, 470);
+			this.labelFadingFrom.Location = new System.Drawing.Point(52, 499);
 			this.labelFadingFrom.Name = "labelFadingFrom";
 			this.labelFadingFrom.Size = new System.Drawing.Size(30, 13);
 			this.labelFadingFrom.TabIndex = 9;
@@ -240,7 +279,7 @@
 			// labelFadingTo
 			// 
 			this.labelFadingTo.AutoSize = true;
-			this.labelFadingTo.Location = new System.Drawing.Point(181, 470);
+			this.labelFadingTo.Location = new System.Drawing.Point(181, 499);
 			this.labelFadingTo.Name = "labelFadingTo";
 			this.labelFadingTo.Size = new System.Drawing.Size(20, 13);
 			this.labelFadingTo.TabIndex = 10;
@@ -254,7 +293,7 @@
 			this.groupBoxFading.Controls.Add(this.labelFadingFrom);
 			this.groupBoxFading.Location = new System.Drawing.Point(180, 12);
 			this.groupBoxFading.Name = "groupBoxFading";
-			this.groupBoxFading.Size = new System.Drawing.Size(349, 489);
+			this.groupBoxFading.Size = new System.Drawing.Size(349, 522);
 			this.groupBoxFading.TabIndex = 11;
 			this.groupBoxFading.TabStop = false;
 			this.groupBoxFading.Text = "Fading";
@@ -272,18 +311,17 @@
 			// 
 			// progressBarAnimation
 			// 
-			this.progressBarAnimation.Location = new System.Drawing.Point(10, 507);
+			this.progressBarAnimation.Location = new System.Drawing.Point(4, 540);
 			this.progressBarAnimation.Name = "progressBarAnimation";
-			this.progressBarAnimation.Size = new System.Drawing.Size(519, 23);
+			this.progressBarAnimation.Size = new System.Drawing.Size(525, 23);
 			this.progressBarAnimation.TabIndex = 13;
-			this.progressBarAnimation.Click += new System.EventHandler(this.progressBarAnimation_Click);
 			// 
 			// EditorForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.YellowGreen;
-			this.ClientSize = new System.Drawing.Size(533, 535);
+			this.ClientSize = new System.Drawing.Size(533, 567);
 			this.Controls.Add(this.progressBarAnimation);
 			this.Controls.Add(this.groupBoxSkeleton);
 			this.Controls.Add(this.groupBoxFading);
@@ -294,6 +332,7 @@
 			((System.ComponentModel.ISupportInitialize)(this.numericUpDownZoom)).EndInit();
 			this.groupBoxView.ResumeLayout(false);
 			this.groupBoxView.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.numericUpDownSpeed)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.numericUpDownPositionY)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.numericUpDownPositionX)).EndInit();
 			this.groupBoxFading.ResumeLayout(false);
@@ -323,5 +362,7 @@
 		private System.Windows.Forms.GroupBox groupBoxFading;
 		private System.Windows.Forms.GroupBox groupBoxSkeleton;
 		public System.Windows.Forms.ProgressBar progressBarAnimation;
+		private System.Windows.Forms.Label labelSpeed;
+		private System.Windows.Forms.NumericUpDown numericUpDownSpeed;
 	}
 }
