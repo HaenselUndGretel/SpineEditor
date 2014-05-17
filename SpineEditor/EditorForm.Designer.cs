@@ -515,8 +515,10 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.DimGray;
 			this.ClientSize = new System.Drawing.Size(588, 574);
+			this.ControlBox = false;
 			this.Controls.Add(this.groupBoxSkeleton);
 			this.Controls.Add(this.groupBoxAnimationMix);
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
 			this.Name = "SpineEditor";
 			this.Text = "SpineEditor [Editor]";
 			this.Load += new System.EventHandler(this.EditorForm_Load);

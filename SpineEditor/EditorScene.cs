@@ -145,18 +145,14 @@ namespace SpineEditor
 			string From = mEditorForm.listBoxFadingFrom.SelectedItem.ToString();
 			string To = mEditorForm.listBoxFadingTo.SelectedItem.ToString();
 			float Fading = (float)mEditorForm.numericUpDownFading.Value;
-			bool Error = true;
 			foreach (SpineData.AnimationMix animMix in SpineDataManager.Instance.GetElementByString(TmpSkeletonName).settings.AnimationFading)
 			{
 				if (animMix.From == From && animMix.To == To)
 				{
 					animMix.Fading = Fading;
-					Error = false;
 					break;
 				}
 			}
-			if (Error)
-				throw new Exception("Kein passender AnimationMix gefunden. WTF?!?");
 			int TmpFromFocus = mEditorForm.listBoxFadingFrom.SelectedIndex;
 			int TmpToFocus = mEditorForm.listBoxFadingTo.SelectedIndex;
 			SaveData();
