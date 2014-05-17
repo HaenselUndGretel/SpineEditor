@@ -11,11 +11,11 @@ using System.Windows.Forms;
 
 namespace SpineEditor
 {
-	public partial class EditorForm : Form
+	public partial class SpineEditor : Form
 	{
 		EditorScene mScene;
 
-		public EditorForm()
+		public SpineEditor()
 		{
 			InitializeComponent();
 			mScene = (EditorScene)SceneManager.CurrentScene;
@@ -33,10 +33,15 @@ namespace SpineEditor
 
 		private void labelZoom_Click(object sender, EventArgs e)
 		{
-			mScene.mSpine.ChangeDrawScaling((float)numericUpDownZoom.Value);
+			mScene.ChangeZoom((float)numericUpDownZoom.Value);
 		}
 
 		private void buttonBrowse_Click(object sender, EventArgs e)
+		{
+			Browse();
+		}
+
+		public void Browse()
 		{
 			folderBrowser.ShowDialog();
 			EngineSettings.DefaultPathSpine = folderBrowser.SelectedPath;
@@ -46,7 +51,7 @@ namespace SpineEditor
 
 		private void folderBrowser_HelpRequest(object sender, EventArgs e)
 		{
-
+			
 		}
 
 		private void numericUpDownPositionX_ValueChanged(object sender, EventArgs e)
@@ -61,14 +66,14 @@ namespace SpineEditor
 
 		private void listBoxFadingFrom_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			listBoxFadingTo.SelectedIndex = listBoxFadingFrom.SelectedIndex;
-			mScene.StartAnimation(listBoxFadingFrom.SelectedItem.ToString(), listBoxFadingTo.SelectedItem.ToString());
+			mScene.mPlaying = false;
+			mScene.UpdateAnimationList();
 		}
 
 		private void listBoxFadingTo_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			listBoxFadingFrom.SelectedIndex = listBoxFadingTo.SelectedIndex;
-			mScene.StartAnimation(listBoxFadingFrom.SelectedItem.ToString(), listBoxFadingTo.SelectedItem.ToString());
+			mScene.RefreshFading();
+			mScene.StartAnimation(listBoxFadingFrom.SelectedItem.ToString());
 		}
 
 		private void numericUpDownSpeed_ValueChanged(object sender, EventArgs e)
@@ -79,6 +84,31 @@ namespace SpineEditor
 		private void numericUpDownZoom_ValueChanged(object sender, EventArgs e)
 		{
 			mScene.ChangeZoom((float)numericUpDownZoom.Value);
+		}
+
+		private void buttonLoop_Click(object sender, EventArgs e)
+		{
+			mScene.StartAnimation(listBoxFadingFrom.SelectedItem.ToString());
+		}
+
+		private void buttonFade_Click(object sender, EventArgs e)
+		{
+			mScene.StartFading(listBoxFadingTo.SelectedItem.ToString());
+		}
+
+		private void buttonScaling_Click(object sender, EventArgs e)
+		{
+			mScene.ApplyScaling((float)numericUpDownScaling.Value);
+		}
+
+		private void buttonResetView_Click(object sender, EventArgs e)
+		{
+			mScene.ResetView();
+		}
+
+		private void buttonFading_Click(object sender, EventArgs e)
+		{
+			mScene.ApplyFading();
 		}
 	}
 }

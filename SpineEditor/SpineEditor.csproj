@@ -98,10 +98,6 @@
       <Project>{4beca7bb-c7c4-401e-a263-49b8bbba2cae}</Project>
       <Name>KryptonEngine</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SpineEditorContent\SpineEditorContent.contentproj">
-      <Name>SpineEditorContent</Name>
-      <XnaReferenceType>Content</XnaReferenceType>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">

@@ -13,6 +13,7 @@ using System.IO;
 using System.Windows.Forms;
 using System.Xml.Serialization;
 using Spine;
+using KryptonEngine.Controls;
 
 namespace SpineEditor
 {
@@ -25,17 +26,13 @@ namespace SpineEditor
 		protected KeyboardState mKeyboardStateOld;
 		protected KeyboardState mKeyboardState;
 
-		protected EditorForm mEditorForm;
+		protected SpineEditor mEditorForm;
 
 		XmlSerializer mSerializer;
 
 		public Dictionary<String, SpineData.SpineDataSettings> mRessourcen;
 
-		private string mA;
-		private string mB;
-		private bool mPlaying;
-		private bool mPlayingA;
-		private double mPlayingTimer;
+		public bool mPlaying;
 
 		#endregion
 
@@ -44,7 +41,7 @@ namespace SpineEditor
 		public EditorScene(string pSceneName)
 			:base(pSceneName)
 		{
-			mClearColor = Color.Blue;
+			mClearColor = Color.DimGray;
 		}
 
 		#endregion
@@ -54,7 +51,7 @@ namespace SpineEditor
 		public override void Initialize()
 		{
 			EngineSettings.DefaultPathSpine = Environment.CurrentDirectory;
-			mEditorForm = new EditorForm();
+			mEditorForm = new SpineEditor();
 			mEditorForm.Show();
 			mSerializer = new XmlSerializer(typeof(SpineData.SpineDataSettings));
 			mRessourcen = new Dictionary<string, SpineData.SpineDataSettings>();
@@ -67,8 +64,9 @@ namespace SpineEditor
 
 		public override void Update()
 		{
+			HandleInput();
 			if (mSpine != null && mPlaying)
-				UpdateAnimation();
+				mSpine.Update();
 			if (mEditorForm.listBoxSkeletons.SelectedItem == null)
 			{
 				mSpine = null;
@@ -87,6 +85,8 @@ namespace SpineEditor
 
 		#region Methods
 
+		#region Input
+
 		/// <summary>
 		/// Reagiert auf Tastatureingaben.
 		/// </summary>
@@ -97,59 +97,150 @@ namespace SpineEditor
 			//if (mKeyboardState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.F1) && mKeyboardStateOld.IsKeyUp(Microsoft.Xna.Framework.Input.Keys.F1))
 				
 			//if (mKeyboardState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.F2) && mKeyboardStateOld.IsKeyUp(Microsoft.Xna.Framework.Input.Keys.F2))
-				
-			//if (mKeyboardState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.F3) && mKeyboardStateOld.IsKeyUp(Microsoft.Xna.Framework.Input.Keys.F3))
-				
-			//if (mKeyboardState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.F4) && mKeyboardStateOld.IsKeyUp(Microsoft.Xna.Framework.Input.Keys.F4))
-				
 
-			//if (mKeyboardState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.F5) && mKeyboardStateOld.IsKeyUp(Microsoft.Xna.Framework.Input.Keys.F5))
-				
-			//if (mKeyboardState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.F6) && mKeyboardStateOld.IsKeyUp(Microsoft.Xna.Framework.Input.Keys.F6))
-				
-			//if (mKeyboardState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.F7) && mKeyboardStateOld.IsKeyUp(Microsoft.Xna.Framework.Input.Keys.F7))
-				
-		}
-
-		/// <summary>
-		/// Startet die Animation von vorne.
-		/// </summary>
-		/// <param name="pA">From</param>
-		/// <param name="pB">To</param>
-		public void StartAnimation(string pA, string pB)
-		{
-			mA = pA;
-			mB = pB;
-			mSpine.Skeleton.SetSlotsToSetupPose();
-			mSpine.AnimationState.SetAnimation(0, mA, true);
-			mPlayingA = true;
-			mPlayingTimer = EngineSettings.Time.TotalGameTime.Milliseconds;
-			mPlaying = true;
-			
-		}
-
-		/// <summary>
-		/// Handled Veränderungen an der Animation.
-		/// </summary>
-		public void UpdateAnimation()
-		{
-			if (EngineSettings.Time.TotalGameTime.Milliseconds > mPlayingTimer + mSpine.AnimationState.GetCurrent(0).Animation.Duration * 2000)
+			if (mKeyboardState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.F3) && mKeyboardStateOld.IsKeyUp(Microsoft.Xna.Framework.Input.Keys.F3))
+				mEditorForm.Browse();
+			if (mSpine != null)
 			{
-				if (mPlayingA)
+				if (mKeyboardState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.F4) && mKeyboardStateOld.IsKeyUp(Microsoft.Xna.Framework.Input.Keys.F4))
+					ApplyScaling((float)mEditorForm.numericUpDownScaling.Value);
+
+				if (mKeyboardState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.F5) && mKeyboardStateOld.IsKeyUp(Microsoft.Xna.Framework.Input.Keys.F5))
+					StartAnimation(mEditorForm.listBoxFadingFrom.SelectedItem.ToString());
+
+				if (mKeyboardState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.F6) && mKeyboardStateOld.IsKeyUp(Microsoft.Xna.Framework.Input.Keys.F6))
+					StartFading(mEditorForm.listBoxFadingTo.SelectedItem.ToString());
+
+				if (mKeyboardState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.F7) && mKeyboardStateOld.IsKeyUp(Microsoft.Xna.Framework.Input.Keys.F7))
+					mEditorForm.numericUpDownFading.Value -= mEditorForm.numericUpDownFading.Increment;
+
+				if (mKeyboardState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.F8) && mKeyboardStateOld.IsKeyUp(Microsoft.Xna.Framework.Input.Keys.F8))
+					mEditorForm.numericUpDownFading.Value += mEditorForm.numericUpDownFading.Increment;
+
+				if (mKeyboardState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.F9) && mKeyboardStateOld.IsKeyUp(Microsoft.Xna.Framework.Input.Keys.F9))
+					ApplyFading();
+			}
+		}
+
+		#endregion
+
+		public bool CompleteSelection(int pLevel)
+		{
+			if (pLevel > 0 && mEditorForm.listBoxSkeletons.SelectedItem == null)
+				return false;
+			if (pLevel > 1 && mEditorForm.listBoxFadingFrom.SelectedItem == null)
+				return false;
+			if (pLevel > 2 && mEditorForm.listBoxFadingTo.SelectedItem == null)
+				return false;
+			return true;
+		}
+
+		#region Control Fading
+
+		public void ApplyFading()
+		{
+			if (!CompleteSelection(3))
+				return;
+			string TmpSkeletonName = mEditorForm.listBoxSkeletons.SelectedItem.ToString();
+			string From = mEditorForm.listBoxFadingFrom.SelectedItem.ToString();
+			string To = mEditorForm.listBoxFadingTo.SelectedItem.ToString();
+			float Fading = (float)mEditorForm.numericUpDownFading.Value;
+			bool Error = true;
+			foreach (SpineData.AnimationMix animMix in SpineDataManager.Instance.GetElementByString(TmpSkeletonName).settings.AnimationFading)
+			{
+				if (animMix.From == From && animMix.To == To)
 				{
-					mSpine.AnimationState.SetAnimation(0, mB, true);
-					mPlayingA = !mPlayingA;
-				}
-				else
-				{
-					StartAnimation(mA, mB); //Loop Fading
+					animMix.Fading = Fading;
+					Error = false;
+					break;
 				}
 			}
-			mSpine.Update();
-			int TmpProgress = (int)(100 * ((EngineSettings.Time.TotalGameTime.Milliseconds - mPlayingTimer) / (double)(mSpine.AnimationState.GetCurrent(0).Animation.Duration * 2000)));
-			TmpProgress = (int)(100 * mSpine.AnimationState.GetCurrent(0).Mix);
-			if (TmpProgress > 0)
-				mEditorForm.progressBarAnimation.Value = TmpProgress;
+			if (Error)
+				throw new Exception("Kein passender AnimationMix gefunden. WTF?!?");
+			int TmpFromFocus = mEditorForm.listBoxFadingFrom.SelectedIndex;
+			int TmpToFocus = mEditorForm.listBoxFadingTo.SelectedIndex;
+			SaveData();
+			LoadNewSpineObject(TmpSkeletonName);
+			mEditorForm.listBoxFadingFrom.SelectedIndex = TmpFromFocus;
+			mEditorForm.listBoxFadingTo.SelectedIndex = TmpToFocus;
+		}
+
+		public void RefreshFading()
+		{
+			foreach (SpineData.AnimationMix animMix in SpineDataManager.Instance.GetElementByString(mEditorForm.listBoxSkeletons.SelectedItem.ToString()).settings.AnimationFading)
+			{
+				if (animMix.From == mEditorForm.listBoxFadingFrom.SelectedItem.ToString() && animMix.To == mEditorForm.listBoxFadingTo.SelectedItem.ToString())
+				{
+					mEditorForm.numericUpDownFading.Value = (decimal)animMix.Fading;
+					return;
+				}
+			}
+		}
+
+
+		#endregion
+
+		#region Control Scaling
+
+		public void ApplyScaling(float pScaling)
+		{
+			if (!CompleteSelection(1))
+				return;
+			string TmpSkeletonName = mEditorForm.listBoxSkeletons.SelectedItem.ToString();
+			SpineDataManager.Instance.GetElementByString(TmpSkeletonName).settings.Scaling = pScaling;
+			SaveData();
+			int TmpFromFocus = mEditorForm.listBoxFadingFrom.SelectedIndex;
+			int TmpToFocus = mEditorForm.listBoxFadingTo.SelectedIndex;
+			LoadNewSpineObject(TmpSkeletonName);
+			mEditorForm.listBoxFadingFrom.SelectedIndex = TmpFromFocus;
+			mEditorForm.listBoxFadingTo.SelectedIndex = TmpToFocus;
+		}
+
+		#endregion
+
+		#region Control Animation
+
+		/// <summary>
+		/// Startet den From-AnimationsLoop.
+		/// </summary>
+		public void StartAnimation(string pAnimation)
+		{
+			if (!CompleteSelection(2))
+				return;
+			if (mSpine != null)
+			{
+				mSpine.AnimationState.ClearTracks();
+				mSpine.Skeleton.SetSlotsToSetupPose();
+				mSpine.AnimationState.SetAnimation(0, pAnimation, true);
+				mPlaying = true;
+			}
+		}
+
+		/// <summary>
+		/// Startet das Fading zur entsprechenden To-Animation.
+		/// </summary>
+		public void StartFading(string pAnimation)
+		{
+			if (!CompleteSelection(3))
+				return;
+			if (mSpine != null)
+				mSpine.AnimationState.SetAnimation(0, pAnimation, false);
+		}
+
+		#endregion
+
+		#region Control View
+
+		/// <summary>
+		/// Setzt das SpineObject neu relativ zur Standardposition.
+		/// </summary>
+		public void ChangeSpinePosition()
+		{
+			if (mSpine != null)
+			{
+				mSpine.PositionX = EngineSettings.VirtualResWidth / 2 + (int)mEditorForm.numericUpDownPositionX.Value;
+				mSpine.PositionY = EngineSettings.VirtualResHeight / 2 + 200 - (int)mEditorForm.numericUpDownPositionY.Value;
+			}
 		}
 
 		/// <summary>
@@ -157,7 +248,11 @@ namespace SpineEditor
 		/// </summary>
 		public void ChangeZoom(float pZoom)
 		{
-			mSpine.ChangeDrawScaling(pZoom);
+			if (mSpine != null)
+			{
+				mSpine.Skeleton.RootBone.ScaleX = pZoom;
+				mSpine.Skeleton.RootBone.ScaleY = pZoom;	
+			}
 		}
 
 		/// <summary>
@@ -165,8 +260,32 @@ namespace SpineEditor
 		/// </summary>
 		public void ChangeSpeed(float pSpeed)
 		{
-			mSpine.AnimationState.TimeScale = pSpeed;
+			if (mSpine != null)
+				mSpine.AnimationState.TimeScale = pSpeed;
 		}
+
+		#endregion
+
+		#region React To From-/To-ListBoxes
+
+		/// <summary>
+		/// Lädt die To-AnimationList
+		/// </summary>
+		public void UpdateAnimationList()
+		{
+			List<string> TmpFadingListOutputTo = new List<string>();
+			foreach (SpineData.AnimationMix animMix in SpineDataManager.Instance.GetElementByString(mEditorForm.listBoxSkeletons.SelectedItem.ToString()).settings.AnimationFading)
+			{
+				if (mEditorForm.listBoxFadingFrom.SelectedItem.ToString() == animMix.From.ToString())
+					TmpFadingListOutputTo.Add(animMix.To.ToString());
+			}
+			mEditorForm.listBoxFadingTo.Items.Clear();
+			mEditorForm.listBoxFadingTo.Items.AddRange(TmpFadingListOutputTo.ToArray());
+		}
+
+		#endregion
+
+		#region React To Skeleton-ListBox / (Re)LoadSpineObject / ResetView
 
 		/// <summary>
 		/// Läd das SpineObject neu.
@@ -182,33 +301,43 @@ namespace SpineEditor
 			SpineDataManager.Instance.LoadContent();
 			mSpine = new SpineObject(pSkeletonName);
 			mSpine.Load();
-			if (!mEditorForm.checkBoxLockView.Checked)
-			{
-				mEditorForm.numericUpDownPositionX.Value = 0;
-				mEditorForm.numericUpDownPositionY.Value = 0;
-				mEditorForm.numericUpDownZoom.Value = 1;
-			}
-			ChangeSpinePosition();
 			List<string> TmpFadingListOutputFrom = new List<string>();
-			List<string> TmpFadingListOutputTo = new List<string>();
 			foreach (SpineData.AnimationMix animMix in SpineDataManager.Instance.GetElementByString(pSkeletonName).settings.AnimationFading)
 			{
-				TmpFadingListOutputFrom.Add( animMix.From.ToString());
-				TmpFadingListOutputTo.Add(animMix.To.ToString());
+				if (!TmpFadingListOutputFrom.Contains(animMix.From.ToString()))
+					TmpFadingListOutputFrom.Add(animMix.From.ToString());
 			}
 			mEditorForm.listBoxFadingFrom.Items.AddRange(TmpFadingListOutputFrom.ToArray());
-			mEditorForm.listBoxFadingTo.Items.AddRange(TmpFadingListOutputTo.ToArray());
-			mSpine.AnimationState.SetAnimation(0, mSpine.Skeleton.Data.Animations[0], true);
+			mEditorForm.numericUpDownScaling.Value = (decimal)SpineDataManager.Instance.GetElementByString(pSkeletonName).settings.Scaling;
+			if (!mEditorForm.checkBoxLockView.Checked)
+			{
+				ResetView();
+			}
+			ApplyView();
 		}
 
-		/// <summary>
-		/// Setzt das SpineObject neu relativ zur Standardposition.
-		/// </summary>
-		public void ChangeSpinePosition()
+		public void ResetView()
 		{
-			mSpine.PositionX = EngineSettings.VirtualResWidth / 2 + (int)mEditorForm.numericUpDownPositionX.Value;
-			mSpine.PositionY = EngineSettings.VirtualResHeight / 2 + 200 - (int)mEditorForm.numericUpDownPositionY.Value;
+			mEditorForm.numericUpDownPositionX.Value = 0;
+			mEditorForm.numericUpDownPositionY.Value = 0;
+			mEditorForm.numericUpDownZoom.Value = 1;
+			mEditorForm.numericUpDownSpeed.Value = 1;
+			ApplyView();
 		}
+
+		public void ApplyView()
+		{
+			if (mSpine != null)
+			{
+				ChangeSpinePosition();
+				ChangeZoom((float)mEditorForm.numericUpDownZoom.Value);
+				ChangeSpeed((float)mEditorForm.numericUpDownSpeed.Value);
+			}
+		}
+
+		#endregion
+
+		#region React To Browse
 
 		/// <summary>
 		/// Läd den Ordner am DataPath neu.
@@ -248,18 +377,12 @@ namespace SpineEditor
 			mEditorForm.listBoxSkeletons.Items.AddRange(mRessourcen.Keys.ToArray());
 		}
 
-		/// <summary>
-		/// Speichert die Settings.
-		/// </summary>
-		public void SaveData()
-		{
-			StreamWriter file = new StreamWriter(EngineSettings.DefaultPathSpine + mEditorForm.listBoxSkeletons.SelectedItem.ToString() + ".settings");
-			mSerializer.Serialize(file, SpineDataManager.Instance.GetElementByString(mSpine.Name));
-			file.Close();
-		}
+		#endregion
+
+		#region Load Helper & Save
 
 		/// <summary>
-		/// List aus Skeleton Files die möglichen FadingSettings.
+		/// List aus Skeleton Files mit möglichen FadingSettings.
 		/// </summary>
 		/// <param name="pDefaultFading">Fading mit dem die Settings am Anfang gefüllt werden.</param>
 		public List<SpineData.AnimationMix> GetAnimationMixes(string pSkeletonName, float pDefaultFading)
@@ -276,6 +399,21 @@ namespace SpineEditor
 			}
 			return TmpAnimationMixes;
 		}
+
+		/// <summary>
+		/// Speichert die Settings.
+		/// </summary>
+		public void SaveData()
+		{
+			if (!CompleteSelection(1))
+				return;
+			string TmpSkeletonName = mEditorForm.listBoxSkeletons.SelectedItem.ToString();
+			StreamWriter file = new StreamWriter(EngineSettings.DefaultPathSpine + "\\" + TmpSkeletonName + ".settings");
+			mSerializer.Serialize(file, SpineDataManager.Instance.GetElementByString(TmpSkeletonName).settings);
+			file.Close();
+		}
+
+		#endregion
 
 		#endregion
 
