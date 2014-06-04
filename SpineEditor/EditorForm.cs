@@ -33,7 +33,7 @@ namespace SpineEditor
 
 		private void labelZoom_Click(object sender, EventArgs e)
 		{
-			mScene.ChangeZoom((float)numericUpDownZoom.Value);
+			
 		}
 
 		private void buttonBrowse_Click(object sender, EventArgs e)
@@ -78,12 +78,12 @@ namespace SpineEditor
 
 		private void numericUpDownSpeed_ValueChanged(object sender, EventArgs e)
 		{
-			mScene.ChangeSpeed((float)numericUpDownSpeed.Value);
+			mScene.ChangeSpeed();
 		}
 
 		private void numericUpDownZoom_ValueChanged(object sender, EventArgs e)
 		{
-			mScene.ChangeZoom((float)numericUpDownZoom.Value);
+			
 		}
 
 		private void buttonLoop_Click(object sender, EventArgs e)

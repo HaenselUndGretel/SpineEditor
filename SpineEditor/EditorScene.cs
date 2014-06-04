@@ -22,6 +22,7 @@ namespace SpineEditor
 		#region Properties
 
 		public SpineObject mSpine;
+		Vector2 mPosition;
 
 		protected KeyboardState mKeyboardStateOld;
 		protected KeyboardState mKeyboardState;
@@ -66,7 +67,10 @@ namespace SpineEditor
 		{
 			HandleInput();
 			if (mSpine != null && mPlaying)
-				mSpine.Update();
+			{
+				mSpine.Update();	
+			}
+
 			if (mEditorForm.listBoxSkeletons.SelectedItem == null)
 			{
 				mSpine = null;
@@ -77,7 +81,10 @@ namespace SpineEditor
 		{
 			DrawBackground();
 			if (mSpine != null)
+			{
+				EngineSettings.SpineRenderer.Effect.View = Matrix.CreateScale((float)mEditorForm.numericUpDownZoom.Value) * Matrix.CreateTranslation(mPosition.X, mPosition.Y, 0f);
 				mSpine.Draw(mSpriteBatch, Vector2.Zero);
+			}
 			DrawOnScene();
 		}
 
@@ -234,30 +241,18 @@ namespace SpineEditor
 		{
 			if (mSpine != null)
 			{
-				mSpine.PositionX = EngineSettings.VirtualResWidth / 2 + (int)mEditorForm.numericUpDownPositionX.Value;
-				mSpine.PositionY = EngineSettings.VirtualResHeight / 2 + 200 - (int)mEditorForm.numericUpDownPositionY.Value;
-			}
-		}
-
-		/// <summary>
-		/// Ändert das DrawScaling des SpineObjects.
-		/// </summary>
-		public void ChangeZoom(float pZoom)
-		{
-			if (mSpine != null)
-			{
-				mSpine.Skeleton.RootBone.ScaleX = pZoom;
-				mSpine.Skeleton.RootBone.ScaleY = pZoom;	
+				mPosition.X = EngineSettings.VirtualResWidth / 2 + (int)mEditorForm.numericUpDownPositionX.Value;
+				mPosition.Y = EngineSettings.VirtualResHeight / 2 + 200 - (int)mEditorForm.numericUpDownPositionY.Value;
 			}
 		}
 
 		/// <summary>
 		/// Ändert die TimeScale des SpineObjects.
 		/// </summary>
-		public void ChangeSpeed(float pSpeed)
+		public void ChangeSpeed()
 		{
 			if (mSpine != null)
-				mSpine.AnimationState.TimeScale = pSpeed;
+				mSpine.AnimationState.TimeScale = (float)mEditorForm.numericUpDownSpeed.Value;
 		}
 
 		#endregion
@@ -326,8 +321,7 @@ namespace SpineEditor
 			if (mSpine != null)
 			{
 				ChangeSpinePosition();
-				ChangeZoom((float)mEditorForm.numericUpDownZoom.Value);
-				ChangeSpeed((float)mEditorForm.numericUpDownSpeed.Value);
+				ChangeSpeed();
 			}
 		}
 
