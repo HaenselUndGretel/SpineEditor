@@ -14,6 +14,7 @@ using System.Windows.Forms;
 using System.Xml.Serialization;
 using Spine;
 using KryptonEngine.Controls;
+using KryptonEngine.HG_Data;
 
 namespace SpineEditor
 {
@@ -56,11 +57,7 @@ namespace SpineEditor
 			mEditorForm.Show();
 			mSerializer = new XmlSerializer(typeof(SpineData.SpineDataSettings));
 			mRessourcen = new Dictionary<string, SpineData.SpineDataSettings>();
-		}
-
-		public override void LoadContent()
-		{
-
+			mRenderer.AmbientLight = new AmbientLight();
 		}
 
 		public override void Update()
@@ -79,13 +76,18 @@ namespace SpineEditor
 
 		public override void Draw()
 		{
-			DrawBackground();
 			if (mSpine != null)
 			{
-				EngineSettings.SpineRenderer.Effect.View = Matrix.CreateScale((float)mEditorForm.numericUpDownZoom.Value) * Matrix.CreateTranslation(mPosition.X, mPosition.Y, 0f);
-				mSpine.Draw(mSpriteBatch, Vector2.Zero);
+				mRenderer.SetGBuffer();
+				mRenderer.ClearGBuffer();
+				mRenderer.Begin(Matrix.CreateScale((float)mEditorForm.numericUpDownZoom.Value) * Matrix.CreateTranslation(mPosition.X, mPosition.Y, 0f));
+				mRenderer.Draw(mSpine.Skeleton, mSpine.Textures);
+				mRenderer.End();
+				
+				mRenderer.DisposeGBuffer();
+				mRenderer.ProcessFinalScene();
+				mRenderer.DrawFinalTargettOnScreen(mSpriteBatch);
 			}
-			DrawOnScene();
 		}
 
 		#endregion
@@ -291,7 +293,7 @@ namespace SpineEditor
 			SpineDataManager.Instance.Unload();
 			SpineDataManager.Instance.LoadContent();
 			mSpine = new SpineObject(pSkeletonName);
-			mSpine.Load();
+			mSpine.LoadContent();
 			List<string> TmpFadingListOutputFrom = new List<string>();
 			foreach (SpineData.AnimationMix animMix in SpineDataManager.Instance.GetElementByString(pSkeletonName).settings.AnimationFading)
 			{

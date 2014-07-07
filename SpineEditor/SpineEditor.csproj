@@ -13,7 +13,7 @@
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <XnaFrameworkVersion>v4.0</XnaFrameworkVersion>
     <XnaPlatform>Windows</XnaPlatform>
-    <XnaProfile>Reach</XnaProfile>
+    <XnaProfile>HiDef</XnaProfile>
     <XnaCrossPlatformGroupID>d4476b19-2239-47bd-9da8-cb44b9dd333e</XnaCrossPlatformGroupID>
     <XnaOutputType>Game</XnaOutputType>
     <ApplicationIcon>Game.ico</ApplicationIcon>
@@ -97,6 +97,11 @@
     <ProjectReference Include="..\..\KryptonEngine\KryptonEngine.csproj">
       <Project>{4beca7bb-c7c4-401e-a263-49b8bbba2cae}</Project>
       <Name>KryptonEngine</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SpineEditorContent\SpineEditorContent.contentproj">
+      <Project>{46DAE1D2-0258-49CA-BCE2-586A6FC68C50}</Project>
+      <Name>SpineEditorContent</Name>
+      <XnaReferenceType>Content</XnaReferenceType>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
