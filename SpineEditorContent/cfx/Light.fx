@@ -10,110 +10,98 @@ float2 screen;
 
 float LightIntensity;
 float3 LightColor;
-float3 LightPosition;
+float4 LightPosition;
 float LightRadius;
 
 struct VertexShaderInput
 {
-    float4 Position : POSITION0;
+    float4 Position     : POSITION0;
 	float2 TexCoord		: TEXCOORD0;
 };
 
 struct VertexShaderOutput
 {
-    float4 Position : POSITION0;
+    float4 Position     : POSITION0;
 	float2 TexCoord		: TEXCOORD0;
+	float4 LightPoss	: TEXCOORD1;
+};
+
+struct LightAndShadow
+{
+	float4 LightTarget  : COLOR0;
+	float4 ShadowTarget : COLOR1;
+	float4 UVTarget		: COLOR2;
 };
 
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 {
   	VertexShaderOutput Output = (VertexShaderOutput)0;
 
-	float4 worldPosition = mul(input.Position, World);
-	float4 viewPosition = mul(worldPosition, View);
-	float4 ProjectionPosition = mul(viewPosition, Projection);
-
 	Output.Position = input.Position;
 
-	
+	Output.LightPoss = mul(LightPosition, View);
 	Output.TexCoord = input.TexCoord;
 
 	return Output;
 }
 
-float falloff(float distanc)
+
+
+LightAndShadow PixelShaderFunction(VertexShaderOutput input)
 {
-	float maxDistance = 10.00;
-	float scalingFactor = 1.0;
+	LightAndShadow output;
 
-	if (distanc <= maxDistance / 3.0)
-	{
-		return scalingFactor * (1.0 - 3.0 * distanc * distanc / (maxDistance * maxDistance));
-	}
-	else if (distanc <= maxDistance)
-	{
-		float x = 1.0 - distanc / maxDistance;
-		return (3.0 / 2.0) * scalingFactor * x * x;
-	}
-		return 0.0;
-}
+	float ration = screen.y / screen.x;
 
+	//Maps Laden
+	float4 normalColor = tex2D(NormalMap, input.TexCoord.xy).rgba;
+	float AoColor = normalColor.a;
+	float3 DepthColor = tex2D(DepthMap, input.TexCoord.xy).rgb;
 
-float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
-{
+	// Normalen normalisiren (RGB) = (XYZ)
+	float3 normal = normalColor.rgb;
+	float3 NnormalColor = normalize(normal*2.0 - 1.0);
 
-		//Maps Laden
-		float4 normalColor = tex2D(NormalMap, input.TexCoord.xy).rgba;
-		float AoColor = normalColor.a;
-		float3 DepthColor = tex2D(DepthMap, input.TexCoord.xy).rgb;
+	
+	// Position Berechnen
+	float z = ((DepthColor.r + DepthColor.g + DepthColor.b) / 3)*720 ;
+	float3 WorldPos = float3(screen.x*input.TexCoord.x, (screen.y*input.TexCoord.y) + (z*0.80), z);
+	
+	//Licht Position und Richtung
+	float3 LightPos = input.LightPoss.xyz;
+	float3 lightDir = (LightPos - WorldPos) * float3(0.75, 1.0, 1.0);
 
-		// Normalen normalisiren (RGB) = (XYZ)
-		float3 normal = normalColor.rgb;
-		float3 NnormalColor = normalize(normal*2.0 - 1.0);
-		//NnormalColor.y *= -1;
+	// Licht einfall berechnen
+	float light = max(dot(NnormalColor, normalize(lightDir)), 0.0) ;
 
-		float ration = screen.y / screen.x;
+	float r = LightPos / (-1 * lightDir.z);
 
-		float z = ((DepthColor.r + DepthColor.g + DepthColor.b) / 3)*720 ;
+	float3 ShadowPos = LightPos + r*lightDir;
 
+	
+	//falloff
+	float lightDistance = length(lightDir);
+	float attenuation = LightIntensity/(lightDistance / LightRadius);//LightIntensity / (lightDistance + 0.00001) - (1/LightRadius);//LightIntensity / (max(lightDistance * LightRadius, 1.0 / LightRadius));
 
-		float3 WorldPos = float3(screen.x*input.TexCoord.x, (screen.y*input.TexCoord.y) + (z*0.80), z);
-			// WorldPos = float3(input.TexCoord.x, (input.TexCoord.y) + (z*0.80), z);
+	float3 fColor = LightColor*light*attenuation;
 
-
-			float3 LightPos = LightPosition;
-		//float3 LightPos = float3(LightPosition.x, LightPosition.y , LightPosition.z * 720);
-
-
-		float3 lightDir = (LightPos - WorldPos) * float3(0.75, 1.0, 1.0);
-
-		
-
-		//
-		float light = max(dot(NnormalColor, normalize(lightDir)), 0.0) ;
-
-		float lightDistance = length(lightDir);
-		float attenuation = LightIntensity / (max(lightDistance * LightRadius, 1.0 / LightRadius));
-
-		//float attenuation =saturate(1/  lightDistance * LightRadius);
-
-		//float attenuation =LightRadius/ (LightRadius+lightDistance);
-
-		float3 fColor = LightColor*LightIntensity*light*attenuation;
-
-		return float4(fColor, 1);
-		/*float3 LightDir = (WorldPos - LightPos);
-		float3 NLightDir = normalize(LightDir);
+	output.LightTarget = float4(fColor, 1.0f);
+	output.ShadowTarget.rgba = float4(normalize(ShadowPos), 1.0f);
+	output.UVTarget = float4(ShadowPos.x / ShadowPos.z, ShadowPos.y / ShadowPos.z,0.0,1.0);
+	
+	return output;
 
 
-		float light = saturate(dot(NnormalColor, -NLightDir));
-
-		float distance = length(LightDir);
-		
-		float att = saturate(LightRadius / distance);*/
+	/*float3 LightDir = (WorldPos - LightPos);
+	float3 NLightDir = normalize(LightDir);
 
 
-		
+	float light = saturate(dot(NnormalColor, -NLightDir));
+
+	float distance = length(LightDir);
+	
+	float att = saturate(LightRadius / distance);*/
+
 }
 
 technique Technique1

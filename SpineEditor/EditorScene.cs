@@ -15,6 +15,8 @@ using System.Xml.Serialization;
 using Spine;
 using KryptonEngine.Controls;
 using KryptonEngine.HG_Data;
+using HanselAndGretel.Data;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace SpineEditor
 {
@@ -65,7 +67,7 @@ namespace SpineEditor
 			HandleInput();
 			if (mSpine != null && mPlaying)
 			{
-				mSpine.Update();	
+				mSpine.Update();
 			}
 
 			if (mEditorForm.listBoxSkeletons.SelectedItem == null)
@@ -78,13 +80,15 @@ namespace SpineEditor
 		{
 			if (mSpine != null)
 			{
+				Matrix Transform = Matrix.CreateScale((float)mEditorForm.numericUpDownZoom.Value) * Matrix.CreateTranslation(mPosition.X, mPosition.Y, 0f);
 				mRenderer.SetGBuffer();
 				mRenderer.ClearGBuffer();
-				mRenderer.Begin(Matrix.CreateScale((float)mEditorForm.numericUpDownZoom.Value) * Matrix.CreateTranslation(mPosition.X, mPosition.Y, 0f));
-				mRenderer.Draw(mSpine.Skeleton, mSpine.Textures);
+				mRenderer.Begin(Transform);
+				mSpine.Draw(mRenderer);
 				mRenderer.End();
 				
 				mRenderer.DisposeGBuffer();
+				mRenderer.ProcessLight(new List<Light>(), Transform);
 				mRenderer.ProcessFinalScene();
 				mRenderer.DrawFinalTargettOnScreen(mSpriteBatch);
 			}
@@ -294,6 +298,11 @@ namespace SpineEditor
 			SpineDataManager.Instance.LoadContent();
 			mSpine = new SpineObject(pSkeletonName);
 			mSpine.LoadContent();
+
+			//Color Texture laden
+			FileStream fileStream = new FileStream(EngineSettings.DefaultPathSpine + "\\" + pSkeletonName + ".png", FileMode.Open, FileAccess.Read);
+			mSpine.Textures[0] = Texture2D.FromStream(EngineSettings.Graphics.GraphicsDevice, fileStream);
+
 			List<string> TmpFadingListOutputFrom = new List<string>();
 			foreach (SpineData.AnimationMix animMix in SpineDataManager.Instance.GetElementByString(pSkeletonName).settings.AnimationFading)
 			{
