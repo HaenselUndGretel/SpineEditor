@@ -90,7 +90,7 @@ namespace SpineEditor
 				mRenderer.DisposeGBuffer();
 				mRenderer.ProcessLight(new List<Light>(), Transform);
 				mRenderer.ProcessFinalScene();
-				mRenderer.DrawFinalTargettOnScreen(mSpriteBatch);
+				mRenderer.DrawRenderTargetOnScreen(mSpriteBatch, 0);
 			}
 		}
 
